@@ -1,0 +1,171 @@
+564
+ANDROID-ПРИЛОЖЕНИЕ ДЛЯ ВОСПРОИЗВЕДЕНИЯ ЗВУКА
+3 Разработка программы . 
+3.1 Работа с MediaPlayer . . 
+3.1.1 Реализация MediaPlayer в программе . . 
+----------
+Функция, обеспечивающая воспроизведение в off-line режиме с устройства:
+public void playClick(View view) {
+if (!check_play) {
+mediaPlayer=MediaPlayer.create(this, Uri.parse(Environment.getExternalStorageDirectory().getPath()+ "/Music/2.mp3"));
+mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+mediaPlayer.start();
+check_play = true;
+}
+else {
+if (mediaPlayer != null) {
+if (mediaPlayer.isPlaying()) {
+mediaPlayer.pause();
+} else {
+mediaPlayer.start();}
+}
+}
+if (mediaPlayer != null) {
+finishTime = mediaPlayer.getDuration();
+startTime = mediaPlayer.getCurrentPosition();
+if (oneTimeOnly == 0) {
+seekbarOne.setMax((int) finishTime);
+oneTimeOnly = 1;
+}
+timeText2.setText(String.format("%d:%d",
+TimeUnit.MILLISECONDS.toMinutes((long) finishTime),
+TimeUnit.MILLISECONDS.toSeconds((long) finishTime) -                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long)
+finishTime)))
+);
+timeText1.setText(String.format("%d:%d",
+TimeUnit.MILLISECONDS.toMinutes((long) startTime),
+TimeUnit.MILLISECONDS.toSeconds((long) startTime) -
+TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long)
+startTime)))
+);
+seekbarOne.setProgress((int) startTime);
+hand.postDelayed(songTime, 100);
+}
+}
+@Override
+protected void onDestroy() {
+super.onDestroy();
+check_play = false;
+}
+Для воспроизведения функция использует файл, путь к которому указывается в программе. Класс AudioManager используется для создания аудиопотока. При первом нажатии на кнопку воспроизведения функция производит инициализацию, а при повторном нажатии останавливает или возобновляет воспроизведение, не проводя повторную инициализацию. Кроме того, функция следит за временем воспроизведения текущего файла, что позволяет пользователю видеть сколько всего времени понадобится для воспроизведения файла и сколько уже было воспроизведено.
+Также за отображение шкалы времени используется функция:
+private Runnable songTime = new Runnable() {
+public void run() {
+nowTime = mediaPlayer.getCurrentPosition();
+timeText1.setText(String.format("%d:%d",
+TimeUnit.MILLISECONDS.toMinutes((long) nowTime),
+TimeUnit.MILLISECONDS.toSeconds((long) nowTime) -
+TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.
+toMinutes((long) nowTime)))
+);
+seekbarOne.setProgress((int) nowTime);
+hand.postDelayed(this, 100);
+}
+};
+Следующие функции добавляют необходимый функционал проигрывателю – перемотку воспроизведения: на 10 секунд вперед и назад и на 1 минуту вперед и назад. Пример перемотки на 10 секунд:
+private double nowTime = 0;
+private double startTime = 0;
+private double finishTime = 0;
+private double tenTime = 10000;
+public void rightTenClick(View view) {
+nowTime = mediaPlayer.getCurrentPosition();
+finishTime = mediaPlayer.getDuration();
+int temp=(int) nowTime;
+if((temp+ tenTime)<=finishTime) {
+nowTime += tenTime;
+mediaPlayer.seekTo((int) nowTime);
+}
+else
+{
+mediaPlayer.seekTo((int) finishTime-5000);
+}
+}
+public void leftTenClick(View view){
+nowTime = mediaPlayer.getCurrentPosition();
+finishTime=mediaPlayer.getDuration();
+int temp = (int) nowTime;
+if((temp - tenTime)>0)
+{
+nowTime -= tenTime;
+mediaPlayer.seekTo((int) nowTime);
+}
+else
+{
+mediaPlayer.seekTo((int) startTime);
+}
+}
+Функции предусматривают ошибки, которые могут быть вызваны перемоткой вперед или назад на время, большее, чем 0 секунд или конечное время воспроизведения. В ситуации перемотки назад время будет устанавливаться на 0, а для перемотки вперед – за 5 секунд до окончания воспроизведения файла.
+Функция on-line воспроизведения:
+public void playClick(View view) {
+if (!check_play) {
+releaseMP();
+mediaPlayer = new MediaPlayer();
+mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+try {
+mediaPlayer.setDataSource(url);
+mediaPlayer.setOnPreparedListener(this);
+mediaPlayer.prepareAsync();
+check_play = true;
+} catch (IOException e) {
+e.printStackTrace();
+}
+}
+else {
+if (mediaPlayer != null) {
+if (mediaPlayer.isPlaying()) {
+mediaPlayer.pause();
+} else {
+mediaPlayer.start();
+}
+}
+}
+if (mediaPlayer != null) {
+finishTime = mediaPlayer.getDuration();
+startTime = mediaPlayer.getCurrentPosition();
+if (oneTimeOnly == 0) {
+seekbarOne.setMax((int) finishTime);
+oneTimeOnly = 1;
+}
+timeText2.setText(String.format("%d:%d",
+TimeUnit.MILLISECONDS.toMinutes((long) finishTime),
+TimeUnit.MILLISECONDS.toSeconds((long) finishTime) -
+TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long)
+finishTime)))
+);
+timeText1.setText(String.format("%d:%d",
+TimeUnit.MILLISECONDS.toMinutes((long) startTime),
+TimeUnit.MILLISECONDS.toSeconds((long) startTime) -
+TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long)
+startTime)))
+);
+seekbarOne.setProgress((int) startTime);
+hand.postDelayed(songTime, 100);
+}
+}
+public void onBackPressed()
+{
+mediaPlayer.stop();
+Intent intent = new Intent(this, listActivity.class);
+startActivity(intent);
+}
+private void releaseMP() {
+if (mediaPlayer != null) {
+try {
+mediaPlayer.release();
+mediaPlayer = null;
+} catch (Exception e) {
+e.printStackTrace();
+}
+}
+}
+public void onPrepared(MediaPlayer mp) {
+mp.start();
+}
+@Override
+protected void onDestroy() {
+super.onDestroy();
+check_play = false;
+releaseMP();
+}
+Функция воспроизводит файл по ссылке, указанной в коде в строке «url». Сам файл хранится в интернет-хранилище. Аналогично с функцией off-line воспроизведения, первое нажатие на кнопку воспроизведения запускает процедуру инициализации и проверки на готовность, а повторное возобновляет или останавливает воспроизведение. Для подготовки к воспроизведению используется метод prepareAsync() вместо prepare(), так как он позволяет быстрее перейти к воспроизведению, не дожидаясь полной загрузки файла.
+Рис. 2 – Внешний вид плеера
