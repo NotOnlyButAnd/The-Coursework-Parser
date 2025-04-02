@@ -1,0 +1,52 @@
+215
+ИССЛЕДОВАНИЯ МЕТОДОВ ПРИНЯТИЯ РЕШЕНИЙ
+3. РЕАЛИЗАЦИЯ И ТЕСТИРОВАНИЕ АЛГОРИТМА 
+3.2. Тестирование 
+----------
+Запишем в файл input.txt информацию, содержащуюся в табл. 1.
+Рис. 6 Данные подающиеся на вход программы
+На вход программы подается файл, который считывается функцией applyID3. Вторым аргументом служит имя файла, куда программа записывает результат своей работы. Результатом является дерево, уровни которого отделяются табуляциями.
+def applyID3(infname,outfname):
+bigarr = ParseAttributes(infname)
+attrnum,attrnames,attr,tests,num=bigarr[0],bigarr[1],bigarr[2],bigarr[3],
+bigarr[4]
+f = open(outfname,'w')
+usedattr=[]
+for i in xrange(attrnum): usedattr.append(i==num)
+ID3(tests,attrnum-1,f,0,usedattr,attrnames,attr)
+Функция entropy(tests,num),  находит исходную энтропию, с помощью которой в дальнейшим вычисляется простота информации для различных атрибутов.
+def entropy(tests,num):
+import math
+def log2(x): return math.log(x)/math.log(2)
+neg = float(len(filter(lambda x:(x[num]==0),tests))) //кол-во отрицательных вариантов
+tot = float(len(tests)) //кол-во различных вариантов
+if ((neg==tot) or (neg==0)): return 0
+return -(neg/tot)*log2(neg/tot)-((tot-neg)/tot)*log2(tot-neg)
+Далее функция gain(tests,attrnum,num) вычисляет прирост информации каждого атрибута.
+Далее с помощью основной функции под названием ID3 на каждом шаге просчитывается исходная энтропия, прирост информации, каждого атрибута, после выбирается атрибут с самым большим приростом на данном шаге.
+Я не очень разобралась с этим куском программы
+def ID3(tests,num,f,tabnum,usedattr,attrnames,attr):
+def findgains(x):
+if usedattr[x]: return 0  return gain(tests,x,num)
+if (len(tests)==0):  f.write('\t'*tabnum+'1')
+return
+if len(filter(lambda x:(x[num]==0),tests))>len(filter(lambda x:(x[num]==1),tests)):
+majority = '0'
+else: majority = '1'
+gains = map(findgains,xrange(len(tests[0])))
+maxgain = gains.index(max(gains))
+if (gains[maxgain]==0):
+f.write('\t'*tabnum+majority+'\n')
+return
+arrpos=filter(lambda x:(x[maxgain]==1),tests)
+arrneg=filter(lambda x:(x[maxgain]==0),tests)
+newusedattr=usedattr
+newusedattr[maxgain]=True
+f.write('\t'*tabnum+attrnames[maxgain]+'='+attr[attrnames[maxgain]][1]+'\n')
+if (len(arrpos)==0):   f.write('\t'*(tabnum+1)+majority+'\n')
+else:
+ID3(arrpos,num,f,tabnum+1,newusedattr,attrnames,attr)
+f.write('\t'*tabnum+attrnames[maxgain]+'='+attr[attrnames[maxgain]][2]+'\n')
+if (len(arrneg)==0):  f.write('\t'*(tabnum+1)+majority+'\n')
+else:   ID3(arrneg,num,f,tabnum+1,newusedattr,attrnames,attr)
+После мы записываем результаты с помощью уже знакомой функции applyID3 в файл output.txt.

@@ -1,0 +1,56 @@
+231
+ANDROID-ПРИЛОЖЕНИЕ ДЛЯ ВОСПРОИЗВЕДЕНИЯ ЗВУКА
+3 Разработка программы . 
+3.3 Загрузка файлов на устройство . . . 
+3.3.1 Реализация DownloadManager в программе . . . 
+----------
+Для загрузки с помощью DownloadManager достаточно указать ссылку на скачивание файла, путь к папке, в которую будет идти загрузка, тип файла и его будущее имя. Также необходимо реализовать методы остановки и возобновления загрузки. При желании можно создать название и комментарий для отображения загрузки в окне уведомлений.
+public class downloadActivity extends AppCompatActivity {
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+super.onCreate(savedInstanceState);
+setContentView(R.layout.activity_download);
+Boolean down_check = getIntent().getExtras().getBoolean("Boolean");
+if(down_check) {
+downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+Request request = new Request(Uri.parse(Song_URL));
+request.setTitle("Война и мир");
+request.setDescription("3");
+request.setMimeType("application/mp3");
+request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "3.mp3");
+request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+downloadManager.enqueue(request);
+}
+else {
+Intent intent2 = new Intent(this, OfPlayerActivity.class);
+intent2.putExtra("Boolean", false);
+startActivity(intent2);
+}
+}
+private static final String Song_URL = "https://content.screencast.com/users/glazowa.karina/folders/Default/media/13ecec3e-4678-4f84-92a2-fd9746556181/3.mp3";
+DownloadManager downloadManager;
+@Override
+protected void onResume() {
+super.onResume();
+registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_NOTIFICATION_CLICKED));
+@Override
+protected void onPause() {
+super.onPause();
+unregisterReceiver(receiver);
+}
+BroadcastReceiver receiver = new BroadcastReceiver() {
+@Override
+public void onReceive(Context context, Intent intent) {
+String action = intent.getAction();
+if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)){
+long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
+DownloadManager.Query query = new DownloadManager.Query();
+query.setFilterById(downloadId);
+} else if (DownloadManager.ACTION_NOTIFICATION_CLICKED.equals(action)){
+long[] ids = intent.getLongArrayExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS);
+DownloadManager.Query query = new DownloadManager.Query();
+query.setFilterById(ids);
+}
+}   };
+Файл загружается в папку Downloads в корне устройства, откуда потом и будет воспроизводиться. Тип файла указывается в программе как mp3-файл. Весь процесс загрузки пользователь может наблюдать в строке уведомлений Android. После завершения загрузки пользователь должен нажать кнопку «Play», чтобы перейти на экран плеера и начать воспроизведение. Воспроизведение начнется сразу. если файл уже был загружен на устройство.

@@ -1,0 +1,54 @@
+287
+ИЗУЧЕНИЕ ПРИНЦИПОВ ОРГАНИЗАЦИИ АТАК НА AD-HOC СЕТИ И ИХ МОДЕЛИРОВАНИЕ
+3 Построение модели сети 
+----------
+Используя средство моделирования NS2, можно промоделировать атаки в беспроводных ad-hoc сетях. NS2 создает копию сети в реальном времени. Этот симулятор стал одним из наиболее широко используемых средств моделирования с открытым кодом. Позволяет промоделировать сетевые атаки, протестировав сетевую безопасность.  Конфигурацию эксперимента позволяет отобразить библиотека Nam, результаты эксперимента отображаются на графиках с помощью библиотеки Xgraph.
+Постановка эксперимента отражена схемой на рисунке 3.
+Рисунок 3 - Схема постановки эксперимента по моделированию атак.
+Сначала необходимо сконфигурировать и настроить узлы, инициализировать объекты и файл трассировки (Simulation Trace File). Файл трассировки необходим для сбора информации о результатах моделирования для дальнейшего анализа результатов:
+Для начала необходимо задать параметры узла, а также другие необходимые параметры: тип антенны, протокол маршрутизации, канал, очередь, MAC уровень и т.д:
+set val(chan) Channel/WirelessChannel;
+set val(prop) Propagation/TwoRayGround;
+set val(netif) Phy/WirelessPhy;
+set val(mac) Mac/802_11;
+set val(ifq) Queue/DropTail/PriQueue;
+set val(ll) LL;
+set val(ant) Antenna/OmniAntenna;
+set val(ifqlen) 50;
+set (nn) 10;
+set (rp) AODV;
+#set (rp) DSR;
+set val(x);
+set val(y);
+set val(energymodel) EnergyModel;
+set val(initialenergy) 100;
+set src [lindex $argv 0]
+set deat [lindex $argv 1]
+set malicious [lindex $argv 2]
+Далее нужно создать новый объект класса Simulator, в котором содержатся все методы необходимые для дальнейшего описания модели:
+#Instialize Global Variables
+set ns_ [new Simulator]
+set tracefd [open tracesh.tr w]
+$ns_ trace-all $tracefd
+Затем откроем файл, который будет использоваться для записи выходных результатов моделирования для использования в nam:
+set namtrace [open al.nam w]
+$ns_ namtrace-all-wireless $namtrace $val(x) $val(y)
+Далее необходимо настроить топологию сети и установить значение сконфигурированных параметров:
+set topo [new Topography]
+$topo load_flatgrid $val(x) $val(y)
+create-god $val(nn)
+set chan_1 [new $val(chan)]
+$ns_ node-cofig
+-adhocRouting $val(rp)\
+-llType $val(ll)\
+-macType $val(mac)\
+-ifqType $val(ifq)\
+-ifqLen $val(ifqlen)\
+-antType $val(ant)\
+-propType $val(prop)\
+-phyType $val(netif)\
+-topoInstance $topo \
+-agentTrace ON \
+-routerTrace ON\
+-macTrace ON \
+-movementTrace OFF\
