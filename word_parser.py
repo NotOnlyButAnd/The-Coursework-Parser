@@ -108,7 +108,7 @@ def set_themes_and_table_of_contents_raw(raw_text_dir):
         # цикл по всем файлам в текущей директории
         for filename in files:
             cur_file_dir = os.path.join(root_dir, filename)
-            # print(f'Рассматриваем txt-файл по пути: {cur_file_dir}')
+            print(f'Рассматриваем txt-файл по пути: {cur_file_dir}')
             parsed_files_properties[f'file{file_idx}'] = {}
             parsed_files_properties[f'file{file_idx}']['path_to_file'] = cur_file_dir
 
@@ -135,6 +135,14 @@ def set_themes_and_table_of_contents_raw(raw_text_dir):
                     index_of_kurs_rab = text_file_lower.index('курсовая работа')
                 except ValueError:
                     index_of_kurs_rab = -1
+
+                try:
+                    index_of_vkr = text_file_lower.index('выпускная квалификационная работа бакалавра')
+                except ValueError:
+                    index_of_vkr = -1
+
+                index_of_kurs_rab = index_of_kurs_rab if index_of_kurs_rab != -1 else index_of_vkr
+
 
                 index_of_rab_vyp = -1
                 for i in range(len(text_file_lower)):
@@ -168,7 +176,7 @@ def set_themes_and_table_of_contents_raw(raw_text_dir):
                         clear_theme_line = theme_line.strip()
 
                         if clear_theme_line != '':
-                            theme_result += re.sub(' +', ' ', clear_theme_line)
+                            theme_result += re.sub(' +', ' ', clear_theme_line) + ' '
                 except KeyError:
                     theme_result = 'NO THEME!'
                 parsed_files_properties[f'file{file_idx}']['theme_clear'] = theme_result
@@ -507,8 +515,9 @@ def make_people_texts(people_text_dir):
                             curr_people_text.append(f'\n{stripped_line}')
                     curr_people_text = [f'{cnt_of_words}\n'] + curr_people_text
 
-                    with open(f'{people_text_dir}\\{item}_{f'0{i}' if i<10 else i}.txt', 'w', encoding='utf-8') as f_w:
-                        f_w.writelines(curr_people_text)
+                    if cnt_of_words >= 150:
+                        with open(f'{people_text_dir}\\{item}_{f'0{i}' if i<10 else i}.txt', 'w', encoding='utf-8') as f_w:
+                            f_w.writelines(curr_people_text)
 
 
 # TODO: Доработать - пока просто сырой вывод в текстовые файлы запросов
@@ -577,7 +586,7 @@ def make_queries_for_llm_from_people_text(people_text_dir, llm_text_dir):
 #######################
 ### Вызываем функцию, которая будет переводить документы doc[x] в txt формат
 g_input_dir = 'data\\input'   # Директория с входными doc[x]-файлами
-# parse_word_files_to_txt(g_input_dir)
+parse_word_files_to_txt(g_input_dir)
 
 ### Вызываем функцию, которая из txt файлов соберет словарь с путями к файлам, темами и оглавлениями (сырыми) и т.д.
 g_raw_text_dir = 'data\\output'  # Директория с полученными txt-файлами
@@ -608,3 +617,4 @@ make_queries_for_llm_from_people_text(g_people_text_dir, g_llm_text_dir)
 # TODO: ОБЩИЕ МОМЕНТЫ
 #   1) Провести проверку текстов людей на нормальность (всех!)
 #   2) Подумать: как исключать текстовые коды программ из текстов людей: программно / вручную / просто удалять текст полностью (+ нейро-текст)
+#   3) Сделать нормальную обработку текстов ВКР: чтобы делались нормальные запросы к LLM
