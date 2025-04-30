@@ -1,0 +1,23 @@
+364
+ОРГАНИЗАЦИЯ БАЗЫ ЗНАНИЙ О СВОЙСТВАХ СТОХАСТИЧЕСКИХ МОДЕЛЕЙ БЕСПРОВОДНЫХ КОМПЬЮТЕРНЫХ AD HOC СЕТЕЙ 
+3 Реализация . 
+3.8 Класс описания взаимодействий с базой данных 
+----------
+Данный класс выполняет функцию моста между базой данных и остальными классами программы. С помощью его методов производятся все манипуляции над таблицами: чтение, запись, редактирование.
+Так как данный класс не может быть статическим в силу наличия в нём полей, то необходимо будет создавать объект типа DatabaseControl для вызова какого-то из методов. Чтобы не создавать объекты во всех классах, где есть обращения к методам DatabaseControl, он создаётся один раз в инкапсулирующем приложение Windows Presentation Foundation классе Application[11] в качестве публичного поля.
+Поля:
+* string ConnectionString – поле, которое хранит строку подключения к базе данных;
+qlConnection _connection – поле содержит непосредственно подключение к самой базе данных.
+Методы:
+* int NumberOfNotes (string tableName) – возвращает число записей в таблице с именем tableName;
+* void AddExperiment (Experiment experiment) – добавляет в базу данных эксперимент experiment, к слову, ради этого метода большинство полей класса Experiment являются свойствами, т.к. доступными в любой области проекта;
+void AddPossibilityDistribution (IReadOnlyList<int> possibilityDistribution) – существует как вложенный метод и выполняется «параллельно» с методом AddExperiment, чтобы внести в таблицу POSSIBILITY_DISTRIBUTION соответствующее эксперименту распределение;
+void AddDynamic (Dynamic dynamic) - существует как вложенный метод и выполняется «параллельно» с методом AddExperiment, чтобы внести в таблицу DYNAMIC соответствующую
+эксперименту динамику вероятности связности, математического ожидания степени вершины и математическое ожидание количества рёбер;
+* public List<Experiment> FindExperiments (int areaShapeFrom, int areaShapeTo, float areaHeightFrom, float areaHeightTo, float areaWidthFrom, float areaWidthTo, float radiusFrom, float radiusTo, int nodesCountFrom, int nodesCountTo, int graphsCountFrom, int graphsCountTo, float connectionPossibilityFrom, float connectionPossibilityTo, float degreeExpectationFrom, float degreeExpectationTo, float arcsExpectationFrom, float arcsExpectationTo) – метод находит в базе все записи, удовлетворяющие введённым параметрам, помещает их в список и выдаёт как результат – список экспериментов;
+* List<int> GetPossibilityDistributionByExperimentId (int id) – метод существует для извлечения массива распределения степеней вершин какого-то определенного эксперимента. Используется вместе с методом FindExperiments;
+* Dynamic GetDynamicByExperimentId (int id) - метод существует для извлечения массивов динамики какого-то определенного эксперимента. Используется вместе с методом FindExperiments;
+string GetTemplateById (int id) – вытаскивает из базы данных полностью собранный для внутренних подстановок шаблон;
+string GetTemplateChildrenById (int id) – вытаскивает список дочерних шаблонов для текущего шаблона;
+* string GetMarkByTemplateId (int id) – получает текстовую метку, вместо которой в родительский шаблон нужно вставить один из дочерних;
+string GetStringById (int id) – извлекает строковое значение из таблицы STRINGS.

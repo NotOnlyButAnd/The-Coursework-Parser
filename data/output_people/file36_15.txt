@@ -1,0 +1,15 @@
+151
+РАЗРАБОТКА СИСТЕМЫ МОДЕЛИРОВАНИЯ AD HOC СЕТЕЙ В НЕВЫПУКЛЫХ ОБЛАСТЯХ 
+5 Состав программ и основные алгоритмы . 
+5.2 Распараллеливание вычислений . 
+----------
+Основные вычисления в программе – генерация новых графов и обработка их статистических данных. Эти вычисления будем распараллеливать с помощью технологии OpenMp. Целью использования параллельных технологий является уменьшение времени, затрачиваемого на работу программы.  const int size = 100; const float node_radius = 1; const float obst_radius = 5; const float world_radius = 50; const int nodes_count = 200;
+int main()
+{#pragma omp parallel for reduction (+:comps) reduction(+:nodes) firstprivate(world)   for (int iters = 0; iters < size; ++iters)
+{
+world.generateObstacle();  	 	world.generateNodes(nodes_count);  	 	world.checkEdges();
+disper[iters] = world.intersectionsCount();  	 	nodes += world.intersectionsCount();  	 	comps += world.componentsCount();  	 	world.clearWorld();
+}
+Здесь #pragma omp parallel for – директива компилятору, обозначающая начало параллельной секции для цикла for.
+reduction (+:comps) reduction(+:nodes)  - обозначают переменные, с которыми в цикле производятся reduction-операции (суммирование). При выходе из цикла, данные операции производится над копиями переменных во всех нитях, и результат присваивается оригинальным переменным.
+firstprivate(world) - приватные копии переменной при входе в параллельную область инициализируются значением оригинальной переменной.

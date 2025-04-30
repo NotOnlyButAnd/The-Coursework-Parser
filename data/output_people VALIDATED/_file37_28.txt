@@ -1,0 +1,37 @@
+633
+ОРГАНИЗАЦИЯ БАЗЫ ЗНАНИЙ О СВОЙСТВАХ СТОХАСТИЧЕСКИХ МОДЕЛЕЙ БЕСПРОВОДНЫХ КОМПЬЮТЕРНЫХ AD HOC СЕТЕЙ 
+3 Реализация . 
+3.5 Класс описания выборки экспериментов . 
+----------
+Класс Selection предназначен для хранения и оперирования выборками экспериментов, найденных по определенным параметрам.
+Поля:
+* int _areaShapeFrom - минимальное значение формы области, в нашем случае – это 0;
+* int _areaShapeTo – максимальное значение параметра формы области, в нашем случае – это 1;
+* float _areaHeightFrom – минимальное значение высоты области, используется для поиска в базе данных;
+float _areaHeightTo – максимальное значение высоты области, используется для поиска в базе данных;
+float _areaWidthFrom – минимальное значение ширины области, используется для поиска в базе данных;
+* float _areaWidthTo – максимальное значение ширины области, используется для поиска в базе данных;
+* float _radiusFrom – минимальное значение радиуса вершины, используется для поиска в базе данных; float _radiusTo – максимальное значение радиуса вершины, используется для поиска в базе данных;
+int _nodesCountFrom – минимальное значение количества вершин, используется для поиска в базе данных;
+int _nodesCountTo – максимальное значение количества вершин, используется для поиска в базе данных;
+int _graphsCountFrom – минимальное значение количества графов, используется для поиска в базе данных;
+int _graphsCountTo – максимальное значение количества графов, используется для поиска в базе данных;
+float _connectionPossibilityFrom – минимальное значение вероятности связности, используется для поиска в базе данных;
+float _connectionPossibilityTo  – максимальное значение вероятности связности, используется для поиска в базе данных;
+float _degreeExpectationFrom – минимальное значение математического ожидания степени вершины, используется для поиска в базе данных;
+* float _degreeExpectationTo  – максимальное значение математического ожидания степени вершины, используется для поиска в базе данных;
+* float 	_arcsExpectationFrom 	– 	минимальное 	значение математического ожидания количества рёбер, используется для поиска в базе данных;
+* float 	_arcsExpectationTo 	 	– 	максимальное 	значение математического ожидания количества рёбер, используется для поиска в базе данных;
+* List<Experiment> ExperimentSelection – список экспериментов, участвующих в выборке;
+float _connectedPossibilityAverage – содержит среднее значение вероятности связности для экспериментов, входящих в выборку;
+35
+* float _degreeExpectationAverage – содержит среднее значение математического ожидания степени вершины для экспериментов, входящих в выборку;
+* float _arcsExpectationAverage – содержит среднее значение математического ожидания количества рёбер для экспериментов, входящих в выборку;
+* List<float> _possibilityDistributionAverage – содержит среднее значение распределения степеней вершин для экспериментов, входящих в выборку; Методы:
+* Selection (int areaShapeFrom, int areaShapeTo, float areaHeightFrom, float areaHeightTo, float areaWidthFrom, float areaWidthTo, float radiusFrom, float radiusTo, int nodesCountFrom, int nodesCountTo, int graphsCountFrom, int graphsCountTo, float connectionPossibilityFrom,           float connectionPossibilityTo, float degreeExpectationFrom, float degreeExpectationTo, float arcsExpectationFrom, float arcsExpectationTo, List<Experiment> experimentSelection) – конструктор, заполняет значения полей и считает средние значения результирующих величин для выборки экспериментов experimentSelection;
+* Selection FindExperiments (int areaShape, float areaHeightFrom, float areaHeightTo, float areaWidthFrom, float areaWidthTo, float radiusFrom, float radiusTo, int nodesCountFrom, int nodesCountTo, int graphsCountFrom, int graphsCountTo, float connectionPossibilityFrom, float connectionPossibilityTo, float degreeExpectationFrom, float degreeExpectationTo, float arcsExpectationFrom, float arcsExpectationTo, string operationCode) – статический метод, который используется для поиска выборки экспериментов, которая удовлетворяет указанным в параметрах условиям. Помимо условий, в метод передаётся строковое значение 	operationCode. 	OperationCode 	представляет 	собой последовательность из трёх чисел от 0 до 1: каждое из этих чисел означает, включен ли определенный набор параметров поиска (параметры 	области, 	параметры 	проведения 	эксперимента, параметры результатов эксперимента) в условия. Так, например, при значении operationCode = “001” при поиске будут учитываться только параметры результатов проведения экспериментов;
+* void 	СonsiderAverages 	() 	– 	вычисляет 	средние 	значения вероятности 	связности, 	математического 	ожидания 	степени вершины, 	математического 	ожидания 	количества 	рёбер 	и распределения степени вершин для выборки экспериментов;
+* List<int> FoldLists (List<int> list1, List<int> list2) – возвращает список целочисленных значений, каждый элемент которого был получен сложением соответствующих друг другу элементов из целочисленных списков list1 и list2. Метод используется для подсчёта распределения средних значений степеней вершин для выборки экспериментов;
+* Dictionary<string, string> GetReplaceItemForReport () - данный метод предназначен для работы с отчётами. Каждый шаблон отчёта содержит строковые метки, вместо которых должны отображаться данные, соответствующие текущему эксперименту, GetReplaceItemsForReport возвращает словарь, ключом в котором является заменяемая метка, а значением – значение переменной, которое нужно вставить в текст шаблона;
+void MakePlots () – отрисовывает графики, которые будут помещены в отчёт;
+void MakeReport () – генерирует отчёт для выборки экспериментов.

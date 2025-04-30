@@ -412,6 +412,18 @@ def print_parsed_dictionary(subitems=None, perfect_or_bad=None):
                 if inner_item == 'is_good_doc' and inner_value == 1:
                     count_of_good_docs += 1
             print()
+            print(f'table_of_contents_hier: {len(value['table_of_contents_hier'])}')
+            print(f'indexes_of_chapters_from_text: {len(value['indexes_of_chapters_from_text'])}')
+            try:
+                print(f'ГЛАВА последняя обработанная: {value['table_of_contents_hier'][len(value['indexes_of_chapters_from_text'])-1]}')
+            except:
+                print('no such index of chapter')
+            try:
+                print(f'count_of_words_by_chapter: {len(value['count_of_words_by_chapter'])}')
+            except:
+                print('no such count_of_words_by_chapter')
+            print()
+            print()
             count_of_docs += 1
 
         print(f'\nКол-во обработанных файлов: {count_of_docs}')
@@ -500,6 +512,7 @@ def make_people_texts(people_text_dir):
         if value['theme_clear'] == 'NO THEME!' or value['theme_clear'] == '' or value['table_of_contents_hier'] == []:
             continue
         if value['indexes_of_chapters_from_text']:
+            value['count_of_words_by_chapter'] = []
             with open(value['path_to_file'], 'r', encoding='utf-8') as f_r:
                 text_file = f_r.readlines()
                 for i in range(len(value['indexes_of_chapters_from_text'])-1):
@@ -515,6 +528,7 @@ def make_people_texts(people_text_dir):
                             curr_people_text.append(f'\n{stripped_line}')
                     curr_people_text = [f'{cnt_of_words}\n'] + curr_people_text
 
+                    value['count_of_words_by_chapter'].append(cnt_of_words)
                     if cnt_of_words >= 150:
                         with open(f'{people_text_dir}\\{item}_{f'0{i}' if i<10 else i}.txt', 'w', encoding='utf-8') as f_w:
                             f_w.writelines(curr_people_text)
@@ -613,8 +627,3 @@ print_parsed_dictionary()
 
 g_llm_text_dir = 'data\\output_llm'
 make_queries_for_llm_from_people_text(g_people_text_dir, g_llm_text_dir)
-
-# TODO: ОБЩИЕ МОМЕНТЫ
-#   1) Провести проверку текстов людей на нормальность (всех!)
-#   2) Подумать: как исключать текстовые коды программ из текстов людей: программно / вручную / просто удалять текст полностью (+ нейро-текст)
-#   3) Сделать нормальную обработку текстов ВКР: чтобы делались нормальные запросы к LLM

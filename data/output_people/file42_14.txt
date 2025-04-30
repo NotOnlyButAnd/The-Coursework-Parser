@@ -1,0 +1,59 @@
+362
+РАЗРАБОТКА ПРОГРАММНОГО АГЕНТА ДЛЯ ИНФОРМАЦИОННОГО ПОИСКА В СРЕДЕ ИНТЕРНЕТ 
+3 Процесс сериализации . 
+3.3 Простая сериализация (Basic serialization) 
+----------
+Вывод сериализатора оформляется с помощью подключаемого форматера. Форматер приводит форму финального представления в соответствие с конкретной средой или контекстом сериализации. Доступно два форматера: форматер XML и двоичный форматер. XML форматер используется в контексет чтения/записи XML, тектовых файлов и потоков, обмена сообщениями SOAP. Двоичный форматер используется в контексте произвольного потока байт. Двоичный вывод по размерам обычно меньше чем XML, иногда значительно.
+Форматор (Formatter)-это класс который реализует процесс сериализации и десериализации.  Для форматора  сериализации ( formatter serialization) 	разработан 	 	интерфейс(interface)
+System.Runtime.Serialization.IFormatter.
+Разработчик должен принимать решение можно ли сериализовать объект.
+Разработчику следует обратить внимание на  перечисленные пункты:
+* Типы по умолчанию не сериализуются. Самый простой способ для сериализации; помечать его [Serializable].
+* Отметка [Serializable]  используется только с referans tips,value tips,enumerators и delegates.
+* Объект образован из одного типа если нуждается в сериализации то нуждается и отметке [Serializable].
+* Если класс отмечен с [Serializable] то все основные классы нужно
+отмечать с [Serializable].
+Рисунок 3   - Процесс сериализации
+* Так же если тип (type) отмечен с [Serializable] но указанный класс не возможно сериализовать, то получим ту же самую ошибку.
+* Типы Enumeration и delegate всегда можно сериализовать, по этому
+не нужно их пометить с [Serializable].
+Пример 1
+[Serializable()]
+public class MyClass
+{     private string sPrivate;
+public string sPublic;
+public MyClass(string arg1, string arg2)
+{
+sPrivate = arg1;
+sPublic = arg2;
+}
+}
+private void btnBasicBinarySerialization_Click(object sender, EventArgs e)
+{
+SerializeObject();
+DeSerializeObject();
+}
+private void SerializeObject() {
+// Создается instance сериализованного типа.
+MyClass ob = new MyClass("Private veri", "Public veri");
+// Создается стрим в котором будет хранится данные объекта.    //Это стрим(Stream) может и быть создан из абстрактного класса        //System.IO.Stream  (MemoryStream, FileStream, NetworkStream).
+// Используя FileStream сериализуем.
+Stream stream = new FileStream("SerializedFile.dat", FileMode.Create,
+FileAccess.Write, FileShare.Write);
+// Для сериализации объекта создав, BinaryFormatter,
+// реализуется сериализация
+System.Runtime.Serialization.IFormatter formatter = new
+System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();     formatter.Serialize(stream, ob);
+// закрываем стрим(stream)
+stream.Close();
+}
+Пример 2 private void DeSerializeObject() {
+// Читается с файла и пишется в стрим(stream).
+Stream stream = new FileStream("SerializedFile.dat", FileMode.Open, FileAccess.Read, FileShare.Read);
+// BinaryFormatter создается.
+// Не надо забывать что в сериализации и десериализации с одной и тот же     //форматором(formatter) работаем. System.Runtime.Serialization.IFormatter formatter = new
+System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();     // Объект десериализируется и получает начальное состояние.
+// вызывается конструктор(constructor)
+MyClass ob = (MyClass)formatter.Deserialize(stream);     MessageBox.Show(ob.sPublic);
+//стрим(stream) закрывается.
+stream.Close();
