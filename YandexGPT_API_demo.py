@@ -33,9 +33,15 @@ headers = {
     "Content-Type": "application/json",
     # TODO: НЕЛЬЗЯ публиковать этот ключ в GIT !!!! (ПОДУМАТЬ как заменить)
     #       https://habr.com/ru/articles/812979/ - вот отсюда решение может подсмотреть?
-    "Authorization": "Api-Key XXXXXXXXXXXXXXXXXXXXXX"
+    "Authorization": "Api-Key XXXXXXXXXXXXXXXXXXXXX"
 }
 
 response = requests.post(url, headers=headers, json=prompt)
-result = response.text
+result = response.json()
+print('ПОЛНЫЙ ОТВЕТ (техничка):')
 print(result)
+print(type(result))
+
+print()
+print('ТОЛЬКО текст сообщения:')
+print(result['result']['alternatives'][0]['message']['text'])
